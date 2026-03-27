@@ -33,7 +33,6 @@ export async function sendMessage(req, res) {
   });
 
   res.status(201).json({
-    aiMessage: result,
     title,
     chat,
     aiMessage,
