@@ -4,6 +4,7 @@ import Login from "./features/auth/pages/Login";
 import Dashboard from "./features/chat/pages/Dashboard";
 import Protected from "./features/auth/components/Protected";
 import Register from "./features/auth/pages/register";
+import Ui from "./features/auth/pages/Ui";
 
 const AppRoutes = () => {
   return (
@@ -11,15 +12,16 @@ const AppRoutes = () => {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/ui" element={<Ui />} />
         <Route
-          path="/"
+          path="/dashboard"
           element={
             <Protected>
               <Dashboard />
             </Protected>
           }
         />
-        <Route path="/dashboard" element={<Navigate to="/" replace/>} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   );
