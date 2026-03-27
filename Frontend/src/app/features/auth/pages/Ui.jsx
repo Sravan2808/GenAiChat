@@ -5,9 +5,21 @@ import { cn } from "@/lib/utils";
 import React from "react";
 import { LuMessageCircle } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const Ui = () => {
   const navigate = useNavigate();
+  const user = useSelector((state) => state.auth.user);
+  const loading = useSelector((state) => state.auth.loading);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  
+  if (user) {
+    navigate("/dashboard");
+  }
+
   return (
     <div className="relative h-screen w-full bg-[#0B2117]  overflow-hidden">
       <DotPattern
@@ -24,14 +36,17 @@ const Ui = () => {
       <div className="px-4 py-3  flex items-center gap-2.5">
         <div className="w-7 h-7 rounded-md flex-shrink-0 bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/40">
           <LuMessageCircle className="w-3.5 h-3.5 text-white" />
-        </div >
+        </div>
         <div className="flex items-center justify-between w-full ">
-        <span className="font-bold selection:bg-green selection:text-green-300 text-lg whitespace-nowrap bg-gradient-to-r from-white to-gray-100/80 bg-clip-text text-center tracking-tight text-transparent">
-          S2 Chat
-        </span>
-        <button onClick={() => navigate("/login")} className="selection:text-green-300  cursor-pointer bg-gradient-to-br from-primary to-accent text-white py-2 px-4 rounded-md shadow-lg shadow-primary/40 hover:shadow-primary/60 transition-shadow duration-200">
-          Try Now
-        </button>
+          <span className="font-bold selection:bg-green selection:text-green-300 text-lg whitespace-nowrap bg-gradient-to-r from-white to-gray-100/80 bg-clip-text text-center tracking-tight text-transparent">
+            S2 Chat
+          </span>
+          <button
+            onClick={() => navigate("/login")}
+            className="selection:text-green-300  cursor-pointer bg-gradient-to-br from-primary to-accent text-white py-2 px-4 rounded-md shadow-lg shadow-primary/40 hover:shadow-primary/60 transition-shadow duration-200"
+          >
+            Try Now
+          </button>
         </div>
       </div>
 
@@ -42,7 +57,6 @@ const Ui = () => {
           </AnimatedShinyText>
         </h1>
       </div>
-    
     </div>
   );
 };
