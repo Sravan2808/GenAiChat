@@ -9,7 +9,9 @@ const App = () => {
     auth.handleGetMe()
   },[])
   return (
-    <AppRoutes />
+    <div className='selection:text-green-500'>
+      <AppRoutes />
+    </div>
   )
 }
 

@@ -20,6 +20,7 @@ import {
 } from "react-icons/lu";
 import { useChat } from "../hooks/useChat";
 import { setCurrentChatId } from "../chat.slice";
+import remarkGfm from "remark-gfm";
 
 const getGreeting = () => {
   const h = new Date().getHours();
@@ -120,11 +121,9 @@ export default function Dashboard() {
 
   // ── Select existing chat from sidebar ──
   const handleSelectChat = (chatId) => {
-    chat.handleOpenChat(chatId);
+    chat.handleOpenChat(chatId, chats);
     setInputValue("");
   };
-
-
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-card-foreground font-sans">
@@ -132,13 +131,13 @@ export default function Dashboard() {
       <aside
         className={`flex flex-col ${
           sidebarOpen ? "w-56" : "w-0"
-        } min-w-0 overflow-hidden bg-card/50 border-r border-foreground/20 transition-all duration-300`}
+        } min-w-0 overflow-hidden bg-card/50  transition-all duration-300`}
       >
         {/* Top accent gradient line */}
         <div className="h-0.5 bg-gradient-to-r from-primary to-secondary flex-shrink-0" />
 
         {/* Brand */}
-        <div className="px-4 py-3 border-b border-foreground/20 flex items-center gap-2.5">
+        <div className="px-4 py-3  flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-md flex-shrink-0 bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/40">
             <LuMessageCircle className="w-3.5 h-3.5 text-white" />
           </div>
@@ -198,7 +197,7 @@ export default function Dashboard() {
       {/* ══════════════════ MAIN ══════════════════ */}
       <main className="flex flex-col flex-1 overflow-hidden relative">
         {/* ── Header ── */}
-        <header className="flex items-center justify-between px-5 py-3 border-b border-foreground/20 bg-card/30 gap-3 flex-shrink-0">
+        <header className="flex items-center justify-between px-5 py-3  bg-card/30 gap-3 flex-shrink-0">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSidebarOpen((p) => !p)}
@@ -237,10 +236,6 @@ export default function Dashboard() {
                     <div className="text-xs text-muted-foreground">{mail}</div>
                   </div>
                 </div>
-                <button className="w-full text-left px-4 py-2.5 text-xs text-muted-foreground hover:text-card-foreground hover:bg-muted/50 transition-all flex items-center gap-2">
-                  <LuUser className="w-3.5 h-3.5" />
-                  Profile
-                </button>
                 <div className="h-px bg-foreground/20" />
                 <button className="w-full text-left px-4 py-2.5 text-xs text-red-500 hover:text-red-600 hover:bg-red-500/10 transition-all flex items-center gap-2 font-semibold">
                   <LuLogOut className="w-3.5 h-3.5" />
@@ -252,7 +247,7 @@ export default function Dashboard() {
         </header>
 
         {/* ── Messages / Welcome ── */}
-        <div className="flex-1 overflow-y-auto px-7 py-6 flex flex-col gap-4">
+        <div className="messages flex-1 overflow-y-auto px-7 py-6 flex flex-col gap-4">
           {/* Welcome screen — shown when no chat is active or chat has no messages */}
           {!hasStarted && (
             <div className="flex flex-col items-center justify-center h-full gap-1.5">
@@ -313,11 +308,11 @@ export default function Dashboard() {
                   className={`max-w-md px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
                     msg.role === "user"
                       ? "bg-gradient-to-br from-primary/80 to-accent/60 text-primary-foreground shadow-lg shadow-primary/40 rounded-br-sm"
-                      : "bg-card border border-foreground/20 text-card-foreground shadow-md shadow-black/20 rounded-bl-sm prose prose-sm dark:prose-invert max-w-none"
+                      : "bg-card text-card-foreground shadow-md shadow-black/20 rounded-bl-sm prose prose-sm dark:prose-invert max-w-none"
                   }`}
                 >
                   {msg.role === "ai" ? (
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                   ) : (
                     msg.content
                   )}
@@ -345,12 +340,12 @@ export default function Dashboard() {
         </div>
 
         {/* ══════════════════ INPUT AREA ══════════════════ */}
-        <div className="px-5 py-3.5 bg-card border-t border-foreground/20 flex-shrink-0">
+        <div className="px-5 py-3.5 bg-transparent  flex-shrink-0">
           <div
             className={`rounded-2xl border bg-input/50 transition-all overflow-hidden ${
               inputFocused
-                ? "border-primary ring-2 ring-primary/30 shadow-2xl shadow-primary/40"
-                : "border-foreground/20 shadow-lg shadow-black/25"
+                ? "border-primary ring-2 ring-primary/30 shadow-[0_1px_1px_rgba(0,0,0,0.05),0_4px_6px_rgba(34,42,53,0.04),0_24px_68px_rgba(47,48,55,0.05),0_2px_3px_rgba(0,0,0,0.04)]"
+                : "border-foreground/20 shadow-[0_1px_1px_rgba(0,0,0,0.05),0_4px_6px_rgba(34,42,53,0.04),0_24px_68px_rgba(47,48,55,0.05),0_2px_3px_rgba(0,0,0,0.04)]"
             }`}
           >
             {/* Top chips */}
@@ -390,20 +385,6 @@ export default function Dashboard() {
 
             {/* Bottom toolbar */}
             <div className="flex items-center gap-1.5 px-2.5 pb-1.5">
-              <button
-                disabled={isLoading}
-                className="p-2 rounded-lg hover:bg-muted/50 transition-all text-muted-foreground hover:text-primary flex-shrink-0 disabled:opacity-40"
-              >
-                <LuPaperclip className="w-3.5 h-3.5" />
-              </button>
-              <button
-                disabled={isLoading}
-                className="p-2 rounded-lg hover:bg-muted/50 transition-all text-muted-foreground hover:text-primary flex-shrink-0 disabled:opacity-40"
-              >
-                <LuImage className="w-3.5 h-3.5" />
-              </button>
-
-              <div className="w-px h-4 bg-foreground/20" />
               <div className="flex-1" />
 
               <span className="text-xs text-muted-foreground">
@@ -445,10 +426,6 @@ export default function Dashboard() {
               </button>
             </div>
           </div>
-
-          <p className="text-center text-xs text-muted-foreground/50 mt-1.5">
-            S2 Chat can make mistakes. Verify important information.
-          </p>
         </div>
       </main>
     </div>

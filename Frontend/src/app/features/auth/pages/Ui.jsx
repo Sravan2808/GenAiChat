@@ -32,7 +32,7 @@ const Ui = () => {
           "mask-[linear-gradient(to_bottom_right,white,transparent,transparent)]",
         )}
       />
-      <Meteors number={30} angle={215} />
+      <Meteors number={30} angle={250} />
       <div className="px-4 py-3  flex items-center gap-2.5">
         <div className="w-7 h-7 rounded-md flex-shrink-0 bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/40">
           <LuMessageCircle className="w-3.5 h-3.5 text-white" />
