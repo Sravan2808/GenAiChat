@@ -21,6 +21,7 @@ import {
 import { useChat } from "../hooks/useChat";
 import { setCurrentChatId } from "../chat.slice";
 import remarkGfm from "remark-gfm";
+import { useAuth } from "../../auth/hook/useAuth";
 
 const getGreeting = () => {
   const h = new Date().getHours();
@@ -39,6 +40,7 @@ const SUGGESTIONS = [
 export default function Dashboard() {
   const dispatch = useDispatch();
   const chat = useChat();
+  const auth = useAuth();
 
   useEffect(() => {
     (chat.initializeSocketConnection(), chat.handleGetChats());
@@ -123,6 +125,10 @@ export default function Dashboard() {
   const handleSelectChat = (chatId) => {
     chat.handleOpenChat(chatId, chats);
     setInputValue("");
+  };
+
+  const handleLogout = () => {
+    auth.handleLogout();
   };
 
   return (
@@ -237,7 +243,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="h-px bg-foreground/20" />
-                <button className="w-full text-left px-4 py-2.5 text-xs text-red-500 hover:text-red-600 hover:bg-red-500/10 transition-all flex items-center gap-2 font-semibold">
+                <button onClick={handleLogout} className="w-full text-left px-4 cursor-pointer py-2.5 text-xs text-red-500 hover:text-red-600 hover:bg-red-500/10 transition-all flex items-center gap-2 font-semibold">
                   <LuLogOut className="w-3.5 h-3.5" />
                   Sign out
                 </button>
