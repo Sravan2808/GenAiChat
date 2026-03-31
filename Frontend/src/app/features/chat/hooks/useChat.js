@@ -42,14 +42,16 @@ async function handleSendMessage({ message, chatId }) {
     dispatch(setLoading(false));
   }
 
-  async function handleOpenChat(chatId) {
+  async function handleOpenChat(chatId,chats) {
+    if(chats[chatId] && chats[chatId].messages.length == 0){
     const data = await getMessages(chatId);
     const { messages } = data;
     const formattedMessages = messages.map((msg) => ({
       content: msg.content,
       role: msg.role,
     }));
-    dispatch(addMessages({ chatId, messages }));
+    dispatch(addMessages({ chatId, messages:formattedMessages }));
+  }
     dispatch(setCurrentChatId(chatId));
   }
   

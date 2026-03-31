@@ -5,6 +5,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.messages::-webkit-scrollbar {
+  display: none;
+}
+
 :root {
   --background: #04110a;
   --foreground: #e2e8f0;
