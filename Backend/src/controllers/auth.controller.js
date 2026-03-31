@@ -1,6 +1,7 @@
 import userModel from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import { sendMail } from "../services/mail.service.js";
+import {redis} from "../config/cache.js";
 
 /**
  * @route POST /api/auth/register
@@ -178,4 +179,14 @@ export async function verifyEmail(req, res) {
       err: error.message,
     });
   }
+}
+
+export async function logoutUser(req,res){
+  const token = req.cookies.token;
+  res.clearCookie("token");
+  await redis.set(token,Date.now().toString(), "EX", 60*60);
+  res.status(200).json({
+    message: "User logged out successfully",
+    success: true,
+  });
 }
