@@ -6,6 +6,7 @@ const chatSlice = createSlice({
     chats: {},
     currentChatId: null,
     isLoading: false,
+    isTranscribing: false,
     error: null,
   },
   reducers: {
@@ -37,7 +38,22 @@ const chatSlice = createSlice({
     addMessages: (state, action) => {
       const { chatId, messages } = action.payload;
       state.chats[chatId].messages.push(...messages);
-    }
+    },
+    setTranscribing: (state, action) => {
+      state.isTranscribing = action.payload;
+    },
+    removeChat: (state, action) => {
+      const chatId = action.payload;
+
+      // Explicitly construct a new object without the deleted chatId
+      const newChats = { ...state.chats };
+      delete newChats[chatId];
+      state.chats = newChats;
+
+      if (state.currentChatId === chatId) {
+        state.currentChatId = null;
+      }
+    },
   },
 });
 
@@ -48,7 +64,9 @@ export const {
   setError,
   createNewChat,
   addNewMessage,
-  addMessages
+  addMessages,
+  setTranscribing,
+  removeChat,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

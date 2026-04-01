@@ -17,6 +17,7 @@ import {
   LuCode,
   LuWand,
   LuLoader,
+  LuX,
 } from "react-icons/lu";
 import { useChat } from "../hooks/useChat";
 import { setCurrentChatId } from "../chat.slice";
@@ -51,6 +52,7 @@ export default function Dashboard() {
   const currentChatId = useSelector((state) => state.chat.currentChatId);
   const isLoading = useSelector((state) => state.chat.isLoading);
   const user = useSelector((state) => state.auth.user);
+  const isTranscribing = useSelector((state) => state.chat.isTranscribing);
 
   // ── Local UI state ──
   const [inputValue, setInputValue] = useState("");
@@ -62,6 +64,9 @@ export default function Dashboard() {
   const messagesEndRef = useRef(null);
   const avatarRef = useRef(null);
   const textareaRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const streamRef = useRef(null);
 
   // ── Derived values ──
   // Current chat object from Redux
@@ -126,9 +131,64 @@ export default function Dashboard() {
     chat.handleOpenChat(chatId, chats);
     setInputValue("");
   };
-
   const handleLogout = () => {
     auth.handleLogout();
+  };
+
+  const toggleRecording = async () => {
+    // ── Stop recording ──
+    if (isRecording) {
+      mediaRecorderRef.current?.stop();
+      setIsRecording(false);
+      return;
+    }
+
+    // ── Start recording ──
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+        },
+      });
+
+      streamRef.current = stream;
+      audioChunksRef.current = [];
+
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+          ? "audio/webm;codecs=opus"
+          : "audio/webm",
+      });
+
+      // Collect audio chunks every 250ms
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      // When stopped — send to Gemini for transcription
+      mediaRecorder.onstop = async () => {
+        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        streamRef.current?.getTracks().forEach((t) => t.stop());
+
+        const transcript = await chat.handleTranscribe(blob);
+        if (transcript) {
+          setInputValue((prev) =>
+            prev ? prev + " " + transcript : transcript,
+          );
+        }
+      };
+
+      mediaRecorder.start(250);
+      mediaRecorderRef.current = mediaRecorder;
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Mic error:", err);
+      alert(
+        "Could not access microphone. Please allow microphone permissions.",
+      );
+    }
   };
 
   return (
@@ -178,20 +238,40 @@ export default function Dashboard() {
           {Object.values(chats).map((c) => {
             const active = currentChatId === c.id;
             return (
-              <button
+              <div
                 key={c.id}
-                onClick={() => handleSelectChat(c.id)}
-                className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-all overflow-hidden whitespace-nowrap flex items-center gap-2 ${
-                  active
-                    ? "bg-gradient-to-r from-primary/60 to-secondary/40 text-card-foreground shadow-lg shadow-primary/30"
-                    : "text-muted-foreground hover:bg-primary/10"
-                }`}
+                className="relative group w-full flex items-center"
               >
-                <LuMessageCircle className="w-3 h-3 flex-shrink-0 opacity-60" />
-                <span className="overflow-hidden cursor-pointer text-ellipsis">
-                  {c.title}
-                </span>
-              </button>
+                <button
+                  onClick={() => handleSelectChat(c.id)}
+                  className={`w-full text-left pr-8 pl-3 py-2 rounded-lg text-xs font-medium transition-all overflow-hidden whitespace-nowrap flex items-center gap-2 ${
+                    active
+                      ? "bg-gradient-to-r from-primary/60 to-secondary/40 text-card-foreground shadow-lg shadow-primary/30"
+                      : "text-muted-foreground hover:bg-primary/10"
+                  }`}
+                >
+                  <LuMessageCircle className="w-3 h-3 flex-shrink-0 opacity-60" />
+                  <span className="overflow-hidden cursor-pointer text-ellipsis">
+                    {c.title}
+                  </span>
+                </button>
+
+                {/* Delete button (X) */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent opening the chat when deleting
+                    chat.handleDeleteChat(c.id);
+                  }}
+                  className={`absolute right-2 p-1 cursor-pointer rounded-md transition-all opacity-0 group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-500 ${
+                    active
+                      ? "text-card-foreground opacity-100"
+                      : "text-muted-foreground"
+                  }`}
+                  title="Delete chat"
+                >
+                  <LuX className="w-3.5 h-3.5" />
+                </button>
+              </div>
             );
           })}
         </nav>
@@ -243,7 +323,10 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="h-px bg-foreground/20" />
-                <button onClick={handleLogout} className="w-full text-left px-4 cursor-pointer py-2.5 text-xs text-red-500 hover:text-red-600 hover:bg-red-500/10 transition-all flex items-center gap-2 font-semibold">
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 cursor-pointer py-2.5 text-xs text-red-500 hover:text-red-600 hover:bg-red-500/10 transition-all flex items-center gap-2 font-semibold"
+                >
                   <LuLogOut className="w-3.5 h-3.5" />
                   Sign out
                 </button>
@@ -318,7 +401,9 @@ export default function Dashboard() {
                   }`}
                 >
                   {msg.role === "ai" ? (
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {msg.content}
+                    </ReactMarkdown>
                   ) : (
                     msg.content
                   )}
@@ -356,7 +441,7 @@ export default function Dashboard() {
           >
             {/* Top chips */}
             <div
-              className={`flex items-center gap-1 px-3 pt-2.5 pb-0 border-b transition-all ${
+              className={`flex items-center gap-1 overflow-x-auto no-scrollbar whitespace-nowrap px-3 pt-2.5 pb-0 border-b transition-all ${
                 inputFocused ? "border-primary/20" : "border-transparent"
               }`}
             >
@@ -399,16 +484,21 @@ export default function Dashboard() {
 
               {/* Voice button */}
               <button
-                onClick={() => setIsRecording((p) => !p)}
-                disabled={isLoading}
-                className={`p-2 rounded-lg flex-shrink-0 transition-all flex items-center justify-center disabled:opacity-40 ${
-                  isRecording
-                    ? "bg-red-500/15 text-red-500 border border-red-500/30 animate-pulse"
-                    : "bg-secondary/10 text-secondary border border-secondary/20 hover:bg-secondary/20"
-                }`}
+                onClick={toggleRecording}
+                disabled={isLoading || isTranscribing}
+                className={`p-2 rounded-lg flex-shrink-0 transition-all
+    flex items-center justify-center disabled:opacity-40 ${
+      isRecording
+        ? "bg-red-500/15 text-red-500 border border-red-500/30 animate-pulse"
+        : isTranscribing
+          ? "bg-secondary/10 text-secondary border border-secondary/20"
+          : "bg-secondary/10 text-secondary border border-secondary/20 hover:bg-secondary/20"
+    }`}
               >
                 {isRecording ? (
                   <LuSquare className="w-3.5 h-3.5" />
+                ) : isTranscribing ? (
+                  <LuLoader className="w-3.5 h-3.5 animate-spin" />
                 ) : (
                   <LuMic className="w-3.5 h-3.5" />
                 )}
