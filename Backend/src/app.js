@@ -4,6 +4,7 @@ import authRouter from "./routes/auth.routes.js";
 import chatRouter from "./routes/chat.routes.js";
 import morgan from "morgan";
 import cors from "cors";
+import path from "path";
 
 const app = express();
 
@@ -24,5 +25,9 @@ app.get("/health", (req, res) => {
 
 app.use("/api/auth",authRouter)
 app.use("/api/chats",chatRouter)
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve("public/index.html"));
+});
+
 
 export default app;
