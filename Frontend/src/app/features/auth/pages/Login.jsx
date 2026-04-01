@@ -83,7 +83,7 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full rounded-xl bg-gradient-to-br from-primary to-accent px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/40 transition hover:translate-y-0.5 hover:shadow-primary/60"
+              className="w-full cursor-pointer rounded-xl bg-gradient-to-br from-primary to-accent px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/40 transition hover:translate-y-0.5 hover:shadow-primary/60"
             >
               Sign in
             </button>

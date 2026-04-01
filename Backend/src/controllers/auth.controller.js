@@ -41,9 +41,9 @@ export async function register(req, res) {
 
   await sendMail({
     to: email,
-    subject: "Welcome to Perplexity",
-    text: `Hello ${username}, welcome to Perplexity! We're excited to have you on board.`,
-    html: `<p>Hello <strong>${username}</strong>, welcome to Perplexity! We're excited to have you on board.</p>,<p>Please verify your email by clicking the link below:</p><a href="http://localhost:7777/api/auth/verify-email?token=${emailVerificationToken}">Verify Email</a>`,
+    subject: "Welcome to S2Chat - Please verify your email",
+    text: `Hello ${username}, welcome to S2Chat! We're excited to have you on board.`,
+    html: `<p>Hello <strong>${username}</strong>, welcome to S2Chat! We're excited to have you on board.</p><p>Please verify your email by clicking the link below:</p><a href="http://localhost:3000/api/auth/verify-email?token=${emailVerificationToken}">Verify Email</a>`,
   });
 
   res.status(201).json({
@@ -170,7 +170,7 @@ export async function verifyEmail(req, res) {
 
     const html = `<h1>Email verified successfully.</h1>
   <p>You can now login to your account.</p>
-  <a href="http://localhost:3000/login">Login</a>`;
+  <a href="http://localhost:5173/login">Login</a>`;
     return res.status(200).send(html);
   } catch (error) {
     return res.status(400).json({

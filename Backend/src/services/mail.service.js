@@ -21,7 +21,7 @@ transporter.verify((error, success) => {
 
 export async function sendMail({ to, subject, text, html }) {
   const mailOptions = {
-    from: `Perplexity <${process.env.GOOGLE_USER}>`,
+    from: `S2Chat <${process.env.GOOGLE_USER}>`,
     to,
     subject,
     text,
