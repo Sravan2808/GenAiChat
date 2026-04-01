@@ -1,13 +1,26 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import { useAuth } from "../hook/useAuth";
+import { useSelector } from "react-redux";
 
 const Register = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const auth = useAuth();
+
+  const user = useSelector((state) => state.auth.user);
+  const loading = useSelector((state) => state.auth.loading);
+
+  if(!loading && user) {
+    return <Navigate to="/dashboard" />;
+  }
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    auth.handleRegister({ username, email, password });
+    navigate("/mail");
     console.log("Register submit", { username, email, password });
   };
 
@@ -90,7 +103,7 @@ const Register = () => {
 
             <button
               type="submit"
-              className="w-full rounded-xl bg-gradient-to-br from-primary to-accent px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/40 transition hover:translate-y-0.5 hover:shadow-primary/60"
+              className="w-full cursor-pointer rounded-xl bg-gradient-to-br from-primary to-accent px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/40 transition hover:translate-y-0.5 hover:shadow-primary/60"
             >
               Create account
             </button>

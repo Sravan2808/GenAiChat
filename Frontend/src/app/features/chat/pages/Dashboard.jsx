@@ -300,7 +300,7 @@ export default function Dashboard() {
           <div ref={avatarRef} className="relative">
             <button
               onClick={() => setAvatarOpen((p) => !p)}
-              className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs text-white transition-all flex-shrink-0 ${
+              className={`w-8 h-8 rounded-full flex cursor-pointer items-center justify-center font-bold text-xs text-white transition-all flex-shrink-0 ${
                 avatarOpen
                   ? "bg-gradient-to-br from-primary to-secondary ring-2 ring-offset-2 ring-primary"
                   : "bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/50 hover:shadow-xl hover:shadow-primary/60"
